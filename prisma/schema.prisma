@@ -1,0 +1,72 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  password String
+  role     Role
+
+  teacher  Teacher?
+  student  Student?
+
+  teacherId Int?    @unique
+  studentId Int?    @unique
+}
+
+model Classroom {
+  id         Int       @id @default(autoincrement())
+  name       String
+  startTime  String
+  endTime    String
+  days       String[]
+  teacher    Teacher?
+  teacherId  Int?      @unique
+  students   Student[]
+  timetable  Timetable[]
+}
+
+model Teacher {
+  id         Int        @id @default(autoincrement())
+  userId     Int        @unique
+  name       String   
+  user       User       @relation(fields: [userId], references: [id])
+  classroom  Classroom? @relation(fields: [classroomId], references: [id])
+  classroomId Int?      @unique
+  timetable Timetable[]
+}
+
+model Student {
+  id         Int        @id @default(autoincrement())
+  userId     Int        @unique
+  name       String
+  user       User       @relation(fields: [userId], references: [id])
+  classroom  Classroom?  @relation(fields: [classroomId], references: [id])
+  classroomId Int?
+}
+
+model Timetable {
+  id         Int        @id @default(autoincrement())
+  subject    String
+  startTime  String
+  endTime    String
+  day        String
+  classroom  Classroom  @relation(fields: [classroomId], references: [id])
+  classroomId Int
+  teacher    Teacher    @relation(fields: [teacherId], references: [id])
+  teacherId  Int
+}
+
+enum Role {
+  PRINCIPAL
+  TEACHER
+  STUDENT
+}
